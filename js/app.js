@@ -69,7 +69,7 @@ const CrewStorage = {
      */
     getCrew() {
         const data = localStorage.getItem('shoresquad_crew');
-        return data ? JSON.parse(data) : { members: 0, cleanups: 0, lbsRemoved: 0 };
+        return data ? JSON.parse(data) : { members: 0, cleanups: 0, kgRemoved: 0 };
     },
 
     /**
@@ -92,12 +92,12 @@ const CrewStorage = {
 
     /**
      * Record a cleanup event
-     * @param {number} pounds - Pounds of trash removed
+     * @param {number} kilograms - Kilograms of trash removed
      */
-    recordCleanup(pounds = 10) {
+    recordCleanup(kilograms = 10) {
         const crew = this.getCrew();
         crew.cleanups++;
-        crew.lbsRemoved += pounds;
+        crew.kgRemoved += kilograms;
         this.saveCrew(crew);
     }
 };
@@ -221,7 +221,7 @@ function updateStats() {
 
     if (statNumbers[0]) statNumbers[0].textContent = crew.cleanups;
     if (statNumbers[1]) statNumbers[1].textContent = crew.members;
-    if (statNumbers[2]) statNumbers[2].textContent = crew.lbsRemoved;
+    if (statNumbers[2]) statNumbers[2].textContent = crew.kgRemoved;
 }
 
 // ==========================================
