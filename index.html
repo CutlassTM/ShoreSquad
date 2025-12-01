@@ -104,6 +104,17 @@
             </div>
         </section>
 
+        <!-- Weather Section - 7 Day Forecast -->
+        <section class="weather-section" id="weather" role="region" aria-label="7-day weather forecast">
+            <h2>🌤️ Pasir Ris Weather Forecast</h2>
+            <div class="weather-container">
+                <div id="weather-loading" class="weather-loading">Loading weather forecast...</div>
+                <div id="weather-forecast" class="weather-forecast"></div>
+                <div id="weather-error" class="weather-error" style="display: none;"></div>
+            </div>
+            <p class="weather-source">Weather data powered by <strong>NEA (National Environment Agency)</strong> via data.gov.sg API</p>
+        </section>
+
         <!-- Call to Action Section -->
         <section class="cta-section" role="region" aria-label="Call to action">
             <h2>Ready to Make Waves?</h2>
@@ -158,5 +169,6 @@
     </footer>
 
     <script src="js/app.js"></script>
+    <script src="js/weather.js"></script>
 </body>
 </html>
