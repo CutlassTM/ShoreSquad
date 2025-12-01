@@ -7,7 +7,63 @@
  * - User profiles with gamification
  * - Leaderboard system
  * - Badge/achievement tracking
+ * - Modal dialogs for all interactions
  */
+
+// ==========================================
+// MODAL SYSTEM
+// ==========================================
+
+const ModalSystem = {
+    /**
+     * Create and show a modal dialog
+     */
+    create(title, content, buttons = []) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>${title}</h2>
+                    <button class="modal-close" aria-label="Close modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    ${content}
+                </div>
+                <div class="modal-footer">
+                    ${buttons.map(btn => `
+                        <button class="btn ${btn.class || 'btn-secondary'}" data-action="${btn.action}">
+                            ${btn.text}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Close modal functionality
+        const closeBtn = modal.querySelector('.modal-close');
+        const overlay = modal.querySelector('.modal-overlay');
+        
+        closeBtn.addEventListener('click', () => modal.remove());
+        overlay.addEventListener('click', () => modal.remove());
+
+        // Button actions
+        buttons.forEach(btn => {
+            const btn_elem = modal.querySelector(`[data-action="${btn.action}"]`);
+            if (btn_elem && btn.callback) {
+                btn_elem.addEventListener('click', () => {
+                    btn.callback();
+                    modal.remove();
+                });
+            }
+        });
+
+        return modal;
+    }
+};
 
 // ==========================================
 // DATA STRUCTURES & STORAGE
@@ -178,7 +234,73 @@ function handleEventRegister(eventId) {
 }
 
 function handleCreateEvent() {
-    showNotification('Create Event feature coming soon! 🚀');
+    const content = `
+        <form id="create-event-form" class="form">
+            <div class="form-group">
+                <label for="event-title">Event Title</label>
+                <input type="text" id="event-title" placeholder="e.g., Sunset Beach Cleanup" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="event-date">Date</label>
+                    <input type="date" id="event-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-time">Time</label>
+                    <input type="time" id="event-time" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="event-location">Location</label>
+                <input type="text" id="event-location" placeholder="Beach name or address" required>
+            </div>
+            <div class="form-group">
+                <label for="event-target">Target Kg</label>
+                <input type="number" id="event-target" min="5" max="500" value="50" required>
+            </div>
+            <div class="form-group">
+                <label for="event-desc">Description</label>
+                <textarea id="event-desc" placeholder="Tell people about this cleanup..." rows="4" required></textarea>
+            </div>
+        </form>
+    `;
+
+    ModalSystem.create('Create New Event', content, [
+        {
+            text: 'Cancel',
+            action: 'cancel',
+            class: 'btn-secondary'
+        },
+        {
+            text: 'Create Event',
+            action: 'create',
+            class: 'btn-primary',
+            callback: () => {
+                const title = document.getElementById('event-title').value;
+                const date = document.getElementById('event-date').value;
+                const time = document.getElementById('event-time').value;
+                const location = document.getElementById('event-location').value;
+                const target = parseInt(document.getElementById('event-target').value);
+                const desc = document.getElementById('event-desc').value;
+
+                const newEvent = {
+                    id: Math.max(...ShoreSquadData.events.map(e => e.id), 0) + 1,
+                    title,
+                    date,
+                    time,
+                    location,
+                    kgTarget: target,
+                    description: desc,
+                    participants: 1,
+                    registered: true
+                };
+
+                ShoreSquadData.events.push(newEvent);
+                renderEvents();
+                showNotification(`✅ Event "${title}" created successfully!`);
+            }
+        }
+    ]);
 }
 
 // ==========================================
@@ -212,7 +334,43 @@ function updateCrewStats() {
 }
 
 function handleInviteCrew() {
-    showNotification('Invite link copied! Share with your friends 🌊');
+    const inviteLink = `https://shoresquad.social/crew/${ShoreSquadData.currentUser.id}`;
+    const content = `
+        <div class="invite-container">
+            <p>Share this link with your friends to invite them to your crew!</p>
+            <div class="invite-link-box">
+                <input type="text" id="invite-link" value="${inviteLink}" readonly class="invite-input">
+                <button class="btn btn-primary" id="copy-invite-btn">📋 Copy Link</button>
+            </div>
+            <p class="invite-subtitle">Or share on social media:</p>
+            <div class="social-share">
+                <a href="https://twitter.com/intent/tweet?text=Join%20ShoreSquad!%20${inviteLink}" target="_blank" class="social-btn twitter">𝕏</a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=${inviteLink}" target="_blank" class="social-btn facebook">f</a>
+                <a href="https://wa.me/?text=Join%20ShoreSquad!%20${inviteLink}" target="_blank" class="social-btn whatsapp">💬</a>
+            </div>
+        </div>
+    `;
+
+    ModalSystem.create('Invite Friends to Your Crew', content, [
+        {
+            text: 'Done',
+            action: 'close',
+            class: 'btn-secondary'
+        }
+    ]);
+
+    setTimeout(() => {
+        const copyBtn = document.getElementById('copy-invite-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const input = document.getElementById('invite-link');
+                input.select();
+                document.execCommand('copy');
+                showNotification('✅ Invite link copied to clipboard!');
+                copyBtn.textContent = '✅ Copied!';
+            });
+        }
+    }, 100);
 }
 
 // ==========================================
@@ -252,11 +410,117 @@ function renderBadges() {
 }
 
 function handleEditProfile() {
-    showNotification('Edit profile feature coming soon! ✏️');
+    const user = ShoreSquadData.currentUser;
+    const avatarOptions = ['👤', '👨', '👩', '👨‍🦰', '👩‍🦱', '👨‍🦲', '👩‍🦲', '🧑‍🎤'];
+    
+    const content = `
+        <form id="edit-profile-form" class="form">
+            <div class="form-group">
+                <label>Select Avatar</label>
+                <div class="avatar-selector">
+                    ${avatarOptions.map(avatar => `
+                        <button type="button" class="avatar-option ${user.avatar === avatar ? 'selected' : ''}" data-avatar="${avatar}">
+                            ${avatar}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="profile-name">Name</label>
+                <input type="text" id="profile-name" value="${user.name}" required>
+            </div>
+            <div class="form-group">
+                <label for="profile-role">Role/Title</label>
+                <input type="text" id="profile-role" value="${user.role}" placeholder="e.g., Eco Warrior" required>
+            </div>
+        </form>
+    `;
+
+    const modal = ModalSystem.create('Edit Your Profile', content, [
+        {
+            text: 'Cancel',
+            action: 'cancel',
+            class: 'btn-secondary'
+        },
+        {
+            text: 'Save Changes',
+            action: 'save',
+            class: 'btn-primary',
+            callback: () => {
+                const selectedAvatar = document.querySelector('.avatar-option.selected');
+                if (selectedAvatar) {
+                    user.avatar = selectedAvatar.dataset.avatar;
+                }
+                user.name = document.getElementById('profile-name').value;
+                user.role = document.getElementById('profile-role').value;
+                
+                updateProfileDisplay();
+                showNotification('✅ Profile updated successfully!');
+            }
+        }
+    ]);
+
+    setTimeout(() => {
+        document.querySelectorAll('.avatar-option').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            });
+        });
+    }, 100);
 }
 
 function handleShareProfile() {
-    showNotification('Profile shared! 📤');
+    const user = ShoreSquadData.currentUser;
+    const profileUrl = `https://shoresquad.social/profile/${user.id}`;
+    
+    const content = `
+        <div class="share-container">
+            <p>Check out my ShoreSquad profile!</p>
+            <div class="profile-preview">
+                <div class="preview-avatar">${user.avatar}</div>
+                <h3>${user.name}</h3>
+                <p>${user.role}</p>
+                <div class="preview-stats">
+                    <div><strong>${user.cleanups}</strong> Cleanups</div>
+                    <div><strong>${user.kgRemoved}</strong> Kg Removed</div>
+                </div>
+            </div>
+            <div class="share-link-box">
+                <input type="text" id="share-link" value="${profileUrl}" readonly class="share-input">
+                <button class="btn btn-primary" id="copy-share-btn">📋 Copy</button>
+            </div>
+            <p class="share-subtitle">Share on social media:</p>
+            <div class="social-share">
+                <a href="https://twitter.com/intent/tweet?text=Check%20out%20my%20ShoreSquad%20profile!%20${profileUrl}" target="_blank" class="social-btn twitter">𝕏</a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=${profileUrl}" target="_blank" class="social-btn facebook">f</a>
+                <a href="https://wa.me/?text=Check%20out%20my%20ShoreSquad%20profile!%20${profileUrl}" target="_blank" class="social-btn whatsapp">💬</a>
+                <a href="mailto:?subject=Check%20out%20my%20ShoreSquad%20profile&body=${profileUrl}" class="social-btn email">📧</a>
+            </div>
+        </div>
+    `;
+
+    ModalSystem.create('Share Your Profile', content, [
+        {
+            text: 'Done',
+            action: 'close',
+            class: 'btn-secondary'
+        }
+    ]);
+
+    setTimeout(() => {
+        const copyBtn = document.getElementById('copy-share-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const input = document.getElementById('share-link');
+                input.select();
+                document.execCommand('copy');
+                showNotification('✅ Profile link copied!');
+                copyBtn.textContent = '✅ Copied!';
+            });
+        }
+    }, 100);
 }
 
 // ==========================================
