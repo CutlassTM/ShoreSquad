@@ -357,6 +357,51 @@ button {
     line-height: 1.6;
 }
 
+/* Map Section */
+.map-section {
+    margin: var(--spacing-2xl) 0;
+}
+
+.map-section h2 {
+    font-size: var(--font-size-2xl);
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+    color: var(--primary-blue);
+}
+
+.map-container {
+    background: var(--light-gray);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.map-info {
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background: white;
+    border-left: 4px solid var(--coral);
+    border-radius: 8px;
+}
+
+.map-info h3 {
+    color: var(--primary-blue);
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-xl);
+}
+
+.map-info p {
+    color: var(--dark-navy);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+}
+
+.map-container iframe {
+    border-radius: 8px;
+    display: block;
+}
+
 /* CTA Section */
 .cta-section {
     background: linear-gradient(135deg, var(--vibrant-teal) 0%, var(--primary-blue) 100%);
