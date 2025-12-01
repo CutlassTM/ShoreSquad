@@ -1,0 +1,53 @@
+# ShoreSquad - Dependencies and Build Files
+node_modules/
+npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.gitkeep
+
+# OS files
+Thumbs.db
+.Thumbs.db
+
+# Optional npm cache
+.npm
+.cache/
+
+# Optional eslint cache
+.eslintcache
+
+# Misc
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Testing
+coverage/
+.nyc_output/
+
+# Service worker
+service-worker.js
+
+# Backup files
+*.bak
+*.backup
+*~
